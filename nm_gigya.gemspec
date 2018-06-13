@@ -1,6 +1,7 @@
 Gem::Specification.new do |s|
+  s.platform = Gem::Platform::RUBY
   s.name        = 'nm-gigya'
-  s.version     = '0.0.1'
+  s.version     = '0.0.2'
   s.date        = '2018-06-13'
   s.summary     = "Utility package for accessing Gigya"
   s.authors     = ["Jonathan Bartlett"]
@@ -11,10 +12,8 @@ Gem::Specification.new do |s|
 	"lib/gigya.rb",
   ]
   s.homepage    = "http://www.newmedio.com/"
-  s.license       = 'Nonstandard'
+  s.license       = 'MIT'
   s.require_path = 'lib'
-  s.add_development_dependency("dotenv")
-  s.add_development_dependency("activesupport")
   s.add_dependency('httparty')
   s.add_dependency("jwt")
 end
