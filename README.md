@@ -11,20 +11,28 @@ To use, just stick your Gigya settings in config/secrets.yml:
 
 Then, access the connection object by doing:
 
+```
   require "gigya"
   conn = Gigya::Connection.shared_connection
+```
 
 Then you can do gigya calls:
 
+```
   conn.api_get("accounts", "getAccountInfo", {:UID => "asdkjddfsakjl"})
+```
 
 If your API is using JWT authentication, just add this to your controller:
 
+```
   before_action :gigya_user_required
+```
 
 Then you can access their Gigya UID by doing "gigya_user_identifier".
 Other JWT information can be found by doing "gigya_user_information['whatever']"
 
 There is also an experimental dynamic API.
 
+```
   conn.accounts.getJWTPublicKey.n
+```
