@@ -1,13 +1,13 @@
 Gem::Specification.new do |s|
-  s.name        = 'Gigya API Utilities'
+  s.name        = 'nm-gigya'
   s.version     = '0.0.1'
   s.date        = '2018-06-13'
   s.summary     = "Utility package for accessing Gigya"
   s.authors     = ["Jonathan Bartlett"]
   s.email       = 'jonathan@newmedio.com'
   s.files       = [
+	"lib/gigya/connection.rb"
 	"lib/gigya/controller_utils.rb",
-	"lib/gigya/railtie.rb",
 	"lib/gigya.rb",
   ]
   s.homepage    = "http://www.newmedio.com/"
