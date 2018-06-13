@@ -6,7 +6,7 @@ Gem::Specification.new do |s|
   s.authors     = ["Jonathan Bartlett"]
   s.email       = 'jonathan@newmedio.com'
   s.files       = [
-	"lib/gigya/connection.rb"
+	"lib/gigya/connection.rb",
 	"lib/gigya/controller_utils.rb",
 	"lib/gigya.rb",
   ]
