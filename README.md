@@ -1,37 +1,47 @@
-= NM Gigya Connection API
+# Gigya API Connection Utilities
 
-This provides a simple API for accessing Gigya from Ruby/Rails.  
-It is especially focused on making JWT authentication using Gigya JWT tokens easier.
+This gem provides Ruby utilities for accessing the Gigya API from Ruby || Rails. It is especially focused on making the Gigya JSON Web Token(JWT) authentication easier.
 
-To use, just stick your Gigya settings in config/secrets.yml:
+## Install
+
+In your Gemfile:
+
+`gem 'nm-gigya', :require => "gigya"`
+
+## Usage
+
+Define your Gigya credentials using the following environment variable keys:
 
 * gigya_api_key
 * gigya_user_key
 * gigya_user_secret
 
-Then, access the connection object by doing:
+Then, create a connection:
 
 ```
   require "gigya"
-  conn = Gigya::Connection.shared_connection
+
+  connection = Gigya::Connection.shared_connection
 ```
 
-Then you can do gigya calls:
+Now, you can call the Gigya API
 
 ```
-  conn.api_get("accounts", "getAccountInfo", {:UID => "asdkjddfsakjl"})
+  connection.api_get("accounts", "getAccountInfo", {:UID => "XXXXXXXX"})
 ```
 
-If your API is using JWT authentication, just add this to your controller:
+If your API is using JWT authentication, simply add this to your controller:
 
 ```
   before_action :gigya_user_required
 ```
 
-Then you can access their Gigya UID by doing "gigya_user_identifier".
-Other JWT information can be found by doing "gigya_user_information['whatever']"
+You should now have access the user's Gigya UID with `gigya_user_identifier`.
+Other JWT information can be found with `gigya_user_information['key']`.
 
-There is also an experimental dynamic API.
+## Experimental
+
+There is also an experimental dynamic API:
 
 ```
   conn.accounts.getJWTPublicKey.n
