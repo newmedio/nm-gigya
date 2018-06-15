@@ -154,10 +154,10 @@ module Gigya
 		GIGYA_BASE_URL="gigya.com"
 		def self.shared_connection
 			@@connection ||= self.new(
-				:datacenter => Rails.application.secrets.gigya_datacenter || "us1",
-				:api_key => Rails.application.secrets.gigya_api_key,
-				:user_key => Rails.application.secrets.gigya_user_key,
-				:user_secret => Rails.application.secrets.gigya_user_secret
+				:datacenter => ENV["GIGYA_DATACENTER"] || "us1",
+				:api_key => ENV["GIGYA_API_KEY"],
+				:user_key => ENV["GIGYA_USER_KEY"],
+				:user_secret => ENV["GIGYA_USER_SECRET"]
 			)
 		end
 
