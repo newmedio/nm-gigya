@@ -16,9 +16,16 @@ module Gigya
 		def interpret_jwt_token
 			@gigya_token ||= begin
 				tmp_token = nil
-				authenticate_with_http_token do |token, options|
-					tmp_token = token
+
+				begin
+					authenticate_with_http_token do |token, options|
+						tmp_token = token
+					end
+				rescue
+					# If this is being called from a helper instead of a controller, then the authenticate_with_http_token is not available.
+					# Additionally, we probably can't even use the HTTP Authorization header anyway
 				end
+
 				tmp_token = params[GIGYA_QUERY_PARAM] unless params[GIGYA_QUERY_PARAM].blank?
 				if tmp_token.blank?
 					tmp_token = cookies[GIGYA_COOKIE_PARAM]

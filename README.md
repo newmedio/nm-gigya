@@ -47,6 +47,8 @@ If your API is using JWT authentication, simply add this to your controller:
 You should now have access the user's Gigya UID with `gigya_user_identifier`.
 Other JWT information can be found with `gigya_user_information['key']`.
 
+You can also include this in your helpers for the same effect.
+
 ## More JWT Magic
 
 Additionally, if you need to store the JWT token in some other way (like in a cookie, param, or session), you can do "gigya_save_jwt(:cookie or :session)" (defaults to :cookie) and it will do so.  gigya_user_required/gigya_user_identifier checks tokens in the following order:
