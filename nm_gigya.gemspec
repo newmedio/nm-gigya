@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.platform = Gem::Platform::RUBY
   s.name        = 'nm-gigya'
-  s.version     = '0.0.2'
+  s.version     = '0.0.5'
   s.date        = '2018-06-13'
   s.summary     = "Utility package for accessing Gigya"
   s.authors     = ["Jonathan Bartlett"]
