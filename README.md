@@ -81,6 +81,36 @@ end
 
 Then you can just add "before_action :user_required" in the controllers that need a user.
 
+## Using JWTs in testing
+
+When testing, you can skip the validation testing for the JWTs.
+First, turn off the JWT testing for the JWT verifier:
+```
+Gigya::Connection.shared_connection.jwt_skip_validation = true
+```
+
+Next, generate a JWT token for use in testing:
+
+```
+jwt = Gigya::Connection.shared_connection.build_test_jwt
+```
+
+With JWT validation turned off, you can use this JWT token.
+If you want to specify stuff to put into your JWT, the parameters are `build_test_jwt(uid, data_options, expiration)`.
+So, for the user "1234", with the fields "firstName", "lastName", "email", and "data.whatever", which expires in 3 hours, we would call
+
+```
+jwt = Gigya::Connection.shared_connection.build_test_jwt("1234", {"firstName" => "Jim", "lastName" => "Jimmersly", "email" => "jim@example.com"}, 3.hours)
+```
+
+You can see the results by doing the validation:
+
+```
+info = Gigya::Connection.shared_connection.validate_jwt(jwt)
+```
+
+If no information is specified, a token for a randomized user is present (each call to to build_test_jwt should result in a different user) using standard Gigya parameters.
+
 ## Experimental Dynamic API
 
 There is also an experimental dynamic API.

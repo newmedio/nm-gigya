@@ -2,6 +2,7 @@ require "openssl"
 require "httparty"
 require "jwt"
 require "json"
+require "securerandom"
 
 # Required for the dynamic modules
 #require "active_support"
@@ -151,14 +152,22 @@ module Gigya
 	end
 
 	class Connection
+		attr_accessor :jwt_skip_validation
+
 		GIGYA_BASE_URL="gigya.com"
 		def self.shared_connection
-			@@connection ||= self.new(
-				:datacenter => ENV["GIGYA_DATACENTER"] || "us1",
-				:api_key => ENV["GIGYA_API_KEY"],
-				:user_key => ENV["GIGYA_USER_KEY"],
-				:user_secret => ENV["GIGYA_USER_SECRET"]
-			)
+			@@connection ||= begin
+				conn = self.new(
+					:datacenter => ENV["GIGYA_DATACENTER"] || "us1",
+					:api_key => ENV["GIGYA_API_KEY"],
+					:user_key => ENV["GIGYA_USER_KEY"],
+					:user_secret => ENV["GIGYA_USER_SECRET"]
+				)
+				conn.jwt_skip_validation = false
+				conn
+			end
+
+			return @@connection
 		end
 
 		def self.shared_connection=(conn)
@@ -175,6 +184,10 @@ module Gigya
 		# Seems to apply to some, but not all, pieces of Base64 encoded things.
 		def self.strange_munge(x)
 			x.gsub("-", "+").gsub("_", "/")
+		end
+
+		def self.strange_unmunge(x)
+			x.gsub("+", "-").gsub("/", "_")
 		end
 
 		# According to https://developers.gigya.com/display/GD/How+To+Validate+A+Gigya+id_token 
@@ -200,6 +213,25 @@ module Gigya
 			@cached_data = {}
 		end
 
+		def build_test_jwt(uid = nil, data_options = {}, expiration = nil, gigya_munge = true)
+			data_options = (data_options || {}).dup
+			data_options["sub"] = uid unless uid.nil?
+			data_options["sub"] ||=SecureRandom.uuid
+			data_options["apiKey"] ||= (@opts[:api_key] || "no_api_key")
+			data_options["iss"] ||= "https://fidm.gigya.com/jwt/#{data_options["apiKey"]}/"
+			data_options["iat"] ||= rand(10000000000)
+			data_options["exp"] = (Time.now + expiration).to_i unless expiration.nil?
+			data_options["exp"] ||= (Time.now + (60 * 60)).to_i
+			data_options["firstName"] ||= "Jim#{rand(10000000)}"
+			data_options["lastName"] ||= "Jimmersly#{rand(10000000)}"
+			data_options["email"] ||= "jim+#{rand(10000000)}@example.com"
+			
+			jwt_str = JWT.encode(data_options, nil, 'none', {:typ => "JWT"})
+			jwt_str = self.class.strange_unmunge(jwt_str) if gigya_munge
+
+			return jwt_str
+		end
+
 		def connection_options
 			@opts
 		end
@@ -221,6 +253,9 @@ module Gigya
 			jwt_token = self.class.reformat_jwt(jwt_token) if gigya_munge
 
 			user_jwt_info, signing_jwt_info = JWT.decode(jwt_token, nil, false)
+
+			return user_jwt_info if jwt_skip_validation
+
 			signing_key_id = signing_jwt_info["keyid"]
 			@cached_data["jwt_public_keys"] ||= {}
 			k = @cached_data["jwt_public_keys"][signing_key_id]
