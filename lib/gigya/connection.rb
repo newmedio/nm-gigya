@@ -202,9 +202,15 @@ module Gigya
 		# This is because Gigya likes to give us keys like this.
 		# https://stackoverflow.com/questions/46121275/ruby-rsa-from-exponent-and-modulus-strings
 		def self.build_rsa_key(modulus, exponent)
+			mod_num = OpenSSL::BN.new(Base64.decode64(strange_munge(modulus)), 2)
+			exp_num = OpenSSL::BN.new(Base64.decode64(exponent), 2)
 			k = OpenSSL::PKey::RSA.new
-			k.n = OpenSSL::BN.new(Base64.decode64(strange_munge(modulus)), 2)
-			k.e = OpenSSL::BN.new(Base64.decode64(exponent), 2)
+			if k.respond_to? :set_key
+				k.set_key(mod_num, exp_num, 0)
+			else
+				k.n = mod_num
+				k.e = exp_num
+			end
 			return k
 		end
 
