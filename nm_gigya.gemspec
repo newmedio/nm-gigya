@@ -1,7 +1,7 @@
 Gem::Specification.new do |s|
   s.platform = Gem::Platform::RUBY
   s.name        = 'nm-gigya'
-  s.version     = '0.0.8'
+  s.version     = '0.0.13'
   s.date        = '2018-06-15'
   s.summary       = "Gigya API Utility Package"
   s.authors     = ["Jonathan Bartlett", "Tyler Jackson"]
@@ -9,6 +9,7 @@ Gem::Specification.new do |s|
   s.files       = [
 	"lib/gigya/connection.rb",
 	"lib/gigya/controller_utils.rb",
+	"lib/gigya/session.rb",
 	"lib/gigya.rb",
   ]
   s.homepage    = "http://www.newmedio.com/"

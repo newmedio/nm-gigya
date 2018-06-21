@@ -64,6 +64,8 @@ If you need to get your JWT in a custom way, just do Gigya::Connection.shared_co
 
 ## Integrating with your web app
 
+### Getting the JWT to your application
+
 Sometimes you need the JWT for authentication in a web app, in which case you can't set the Authorization header.  
 In that case, I would (a) do the login, (b) obtain the JWT, (c) create/call an action to save the JWT to a cookie or session parameter using gigya_save_jwt.
 
@@ -80,6 +82,31 @@ end
 ```
 
 Then you can just add "before_action :user_required" in the controllers that need a user.
+
+### Using a Gigya Authentication Screenset
+
+I also implemented a way to very simply and easily utilize a Gigya screenset for login.  
+All you have to do is create a session controller and include a particular class.
+
+It looks like this:
+```
+class SessionsController < ApplicationController
+	include Gigya::Session
+
+	gigya_screen_set "WhateverScreenSetIWantToUse"
+	gigya_after_login_redirect :whatever_path
+end
+```
+Then you just need to add `resource :session` to your routes file.
+Those are the typical parameters to use.
+This will manage (a) showing the Gigya login screenset, (b) saving a JWT after login, and (c) redirecting you back into the application afterwards.
+The endpoint for this particular one is `/session/new`. 
+You can pass it a redirect param if you want it to redirect somewhere else after successful login, so `/session/new?redirect=/wherever`.
+
+If you leave off the `gigya_screen_set` command it will default to "Default-RegistrationLogin" which I think is Gigya's own screenset. 
+If you leave off `gigya_after_login_redirect` it will default to `root_path`.  
+That function can be given a string (which it will use directly), a symbol (which it will then "send" to "self"), or a Proc (which it call .call()").
+Other functions which can be used to set settings on this thing include `gigya_start_screen`, `gigya_token_storage` (:cookie, :session - defaults to session I wouldn't change it yet in this version), `gigya_script_content_for` (by default we just shove the JS into the page, but this allows you to specify a content_for block to shove it into), `gigya_token_expire_time` (defaults to 24.hours), `gigya_jwt_fields` (comma-separated list of fields for Gigya to put in the JWT.  Defaults to "firstName,lastName,email"), `gigya_api_key` (defaults to the one from the shared_connection object).
 
 ## Using JWTs in testing
 

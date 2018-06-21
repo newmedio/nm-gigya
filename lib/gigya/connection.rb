@@ -270,6 +270,10 @@ module Gigya
 			return user_jwt_info
 		end
 
+		def api_key
+			@opts[:api_key]
+		end
+
 		def login(username, password)
 			user_info = api_get("accounts", "login", {:loginID => username, :password => password, :targetEnv => "mobile"}, :throw_on_error => true)
 			uid = user_info["UID"]
