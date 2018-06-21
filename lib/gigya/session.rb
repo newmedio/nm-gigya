@@ -74,7 +74,7 @@ EOF
 		end
 
 		full_erb = head_code + body_code
-		render :inline => full_erb
+		render :inline => full_erb, :layout => true
 	end
 
 	module ClassMethods
