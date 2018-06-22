@@ -13,8 +13,9 @@ module Gigya
 			end
 		end
 
-		def interpret_jwt_token
-			@gigya_token ||= begin
+		# Obtain the token from the standard places
+		def gigya_jwt_token
+			@gigya_jwt_token ||= begin
 				tmp_token = nil
 
 				begin
@@ -26,26 +27,37 @@ module Gigya
 					# Additionally, we probably can't even use the HTTP Authorization header anyway
 				end
 
-				tmp_token = params[GIGYA_QUERY_PARAM] unless params[GIGYA_QUERY_PARAM].blank?
-				if tmp_token.blank?
-					tmp_token = cookies[GIGYA_COOKIE_PARAM]
+				begin
+					tmp_token = params[GIGYA_QUERY_PARAM] unless params[GIGYA_QUERY_PARAM].blank?
+					if tmp_token.blank?
+						tmp_token = cookies[GIGYA_COOKIE_PARAM]
+					end
+				rescue
+					# Some lightweight controllers don't do cookies
 				end
 
-				if tmp_token.blank?
-					tmp_token = session[GIGYA_SESSION_PARAM]	
+				begin
+					if tmp_token.blank?
+						tmp_token = session[GIGYA_SESSION_PARAM]	
+					end
+				rescue
+					# Some lightweight controllers don't do sessions
 				end
-				
+
 				tmp_token
 			end
-			@gigya_jwt_info ||= Gigya::Connection.shared_connection.validate_jwt(@gigya_token)
+		end
+
+		def interpret_jwt_token
+			@gigya_jwt_info ||= Gigya::Connection.shared_connection.validate_jwt(gigya_jwt_token)
 		end
 
 		def gigya_save_jwt(destination = :cookie)
 			interpret_jwt_token
 			if destination == :cookie
-				cookies[GIGYA_COOKIE_PARAM] = @gigya_token
+				cookies[GIGYA_COOKIE_PARAM] = gigya_jwt_token
 			elsif destination == :session
-				cookies[GIGYA_SESSION_PARAM] = @gigya_token
+				cookies[GIGYA_SESSION_PARAM] = gigya_jwt_token
 			else
 				raise "Invalid Gigya JWT destination"
 			end
