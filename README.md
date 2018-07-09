@@ -138,6 +138,69 @@ info = Gigya::Connection.shared_connection.validate_jwt(jwt)
 
 If no information is specified, a token for a randomized user is present (each call to to build_test_jwt should result in a different user) using standard Gigya parameters.
 
+## Refresh Tokens ##
+
+If there is some amount of risk on your login---i.e., that you want to make sure the person gets logged off, even before their session expires, we support that using refresh tokens.
+
+In this system, your original token *is* your refresh token.  You merely specify how long you want to wait until we do a refresh token check.  So, if your token is for 1 day, you might refresh it every 15 minutes.
+To do that, just set the following in an initializer:
+
+```
+Gigya::ControllerUtils.gigya_jwt_refresh_time = 15.minutes
+```
+
+This will cause a refresh of authentication whenever the token is 15 minutes old.
+The final expiration time will still be the same, more-or-less. 
+There is some jitter due to the time it takes for network traffic.
+So you will probably gain a second or two from your expiration date every time the token is refreshed.
+
+The refresh process is automatic for cookie and session authentication.
+If you are authenticating with an `Authorization` header, you will be returned a `X-Set-Authorization-Token` header with the new JWT in it.
+If you fail to use the new JWT, it will slow your app down by doing re-auths every time.
+
+You can also customize the refresh process if you have additional internal logic you need to apply.
+You can adjust the token refreshing rules by overriding `needs_token_refresh?` in your controller.  
+Call `needs_token_refresh_for_time?` to get the existing time-based refresh logic.
+
+You can then override the actual refresh logic by overriding `perform_token_refresh` in your controller.  Call `gigya_perform_token_refresh` to get the existing gigya code for performing a refresh.
+This way, if there are additional exceptional circumstances which will require throwing errors, you can do that here.
+
+For instance:
+```
+class MyController < ApplicationController::Base
+	include Gigya::ControllerUtils
+	before_action :user_required
+
+	def needs_token_refresh?
+		if Time.now.wday == 0
+			# Refresh every request on Sunday
+			return true
+		else
+			# Otherwise do the normal rules
+			return needs_token_refresh_for_time?
+		end
+	end
+
+	def perform_token_refresh
+		if is_in_jerk_list(gigya_user_identifier)
+			# deny access to jerks
+			raise "You're a jerk" 
+		else
+			# otherwise do a normal refresh
+			gigya_perform_token_refresh
+		end
+	end
+
+	def user_required
+		begin
+			raise "Invalid User" if gigya_user_identifier.blank?
+		rescue
+			redirect_to whever_you_login_from_path
+		end
+	end
+end
+```
+
 ## Experimental Dynamic API
 
 There is also an experimental dynamic API.
