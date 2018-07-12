@@ -219,13 +219,13 @@ module Gigya
 			@cached_data = {}
 		end
 
-		def build_test_jwt(uid = nil, data_options = {}, expiration = nil, gigya_munge = true)
+		def build_test_jwt(uid = nil, data_options = {}, expiration = nil, gigya_munge = false)
 			data_options = (data_options || {}).dup
 			data_options["sub"] = uid unless uid.nil?
 			data_options["sub"] ||=SecureRandom.uuid
 			data_options["apiKey"] ||= (@opts[:api_key] || "no_api_key")
 			data_options["iss"] ||= "https://fidm.gigya.com/jwt/#{data_options["apiKey"]}/"
-			data_options["iat"] ||= rand(10000000000)
+			data_options["iat"] ||= Time.now - 10.seconds.to_i
 			data_options["exp"] = (Time.now + expiration).to_i unless expiration.nil?
 			data_options["exp"] ||= (Time.now + (60 * 60)).to_i
 			data_options["firstName"] ||= "Jim#{rand(10000000)}"
