@@ -140,7 +140,7 @@ module Gigya
 		def needs_token_refresh_for_time?
 			return false if @@gigya_jwt_refresh_time.nil?
 
-			issue_time = Time.at(@gigya_jwt_info["iat"])
+			issue_time = Time.at(@gigya_jwt_info["iat"].to_i)
 
 			return issue_time + @@gigya_jwt_refresh_time < Time.now
 		end

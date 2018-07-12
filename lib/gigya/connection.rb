@@ -225,7 +225,7 @@ module Gigya
 			data_options["sub"] ||=SecureRandom.uuid
 			data_options["apiKey"] ||= (@opts[:api_key] || "no_api_key")
 			data_options["iss"] ||= "https://fidm.gigya.com/jwt/#{data_options["apiKey"]}/"
-			data_options["iat"] ||= Time.now - 10.seconds.to_i
+			data_options["iat"] ||= (Time.now - 10.seconds).to_i
 			data_options["exp"] = (Time.now + expiration).to_i unless expiration.nil?
 			data_options["exp"] ||= (Time.now + (60 * 60)).to_i
 			data_options["firstName"] ||= "Jim#{rand(10000000)}"
