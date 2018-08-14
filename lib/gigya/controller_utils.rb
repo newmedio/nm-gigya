@@ -103,6 +103,7 @@ module Gigya
 				# Keep refreshing with the same time period
 				expiration = info["exp"] - info["iat"]
 			end
+			expiration_time = Time.now + expiration
 			result = Gigya::Connection.shared_connection.api_get("accounts", "getJWT", {:UID => gigya_user_identifier, :fields => fields.join(","), :expiration => expiration})
 			token = result["id_token"]
 
@@ -110,7 +111,8 @@ module Gigya
 
 			case @gigya_token_location
 				when :header
-					headers["X-Set-Authorization-Token"] = token	
+					headers["X-Set-Authorization-Token"] = token
+					headers["X-Set-Authorization-Token-Expiration"] = expiration_time.to_i
 				when :cookie
 					cookies[GIGYA_COOKIE_PARAM] = token
 				when :session
