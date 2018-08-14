@@ -61,6 +61,16 @@ module Gigya
 			end
 		end
 
+		def self.find_by_email(email, opts = {})
+			email = email.gsub('"', '') # get rid of quotes
+			opts = {} if opts.nil?
+			conn = opts[:connection] || Gigya::Connection.shared_connection
+			resp = conn.api_get("accounts", "search", {:query => "SELECT uid FROM accounts WHERE profile.email = \"#{email}\""})
+			uid = resp["results"][0]["UID"] rescue nil
+			return nil if uid.blank?
+			return self.find(uid, opts)
+		end
+
 		def self.find(uid, opts = {}) # Find a Gigya account record by its UID attribute
 			opts = {} if opts.nil?
 
@@ -82,7 +92,7 @@ module Gigya
 		end
 
 		def created_at
-			DateTime.strptime(account_json["createdTimestamp"].to_s, "%Q") rescue nil
+			DateTime.strptime(gigya_details["createdTimestamp"].to_s, "%Q") rescue nil
 		end
 
 		def full_name

@@ -221,8 +221,11 @@ u.gender
 u.gender_string
 u.gigya_details # All the details from getAccountInfo as a hash
 u.save
+
 u2 = Gigya::User.find("abc123") # results are from cache
 u2.reload # Reloads using getAccountInfo
+
+u3 = Gigya::User.find_by_email("me@example.com") # loads a user by email. Experimental.
 ```
 
 If you want to use a specific connection instead of the shared connection, do either:
