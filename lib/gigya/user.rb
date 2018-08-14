@@ -15,15 +15,14 @@ module Gigya
 		# A user can be initialized with a JSON hash of a Gigya account record
 		def initialize(json = {}, needs_caching = true) 
 			# needs_caching is used for internal methods which load the record from cache and therefore don't need to save to cache
-			set_attributes(json) unless json.nil?
+			set_attributes(json)
 			save_to_cache if needs_caching
 
 			return nil
 		end
 
-		def set_attributes(json = {}, opts = {})
-			opts = {} if opts.nil?
-			gigya_details = json
+		def set_attributes(json = {})
+			self.gigya_details = json
 		end
 
 		def reload
@@ -46,7 +45,9 @@ module Gigya
 
 		def save_to_cache
 			if defined?(Rails)
-				Rails.cache.write("gigya-user-#{uid}", gigya_details)
+				u = uid
+				return if u.blank? # Don't save a blank object
+				Rails.cache.write("gigya-user-#{u}", gigya_details)
 			else
 				# Nothing to do
 			end
@@ -77,7 +78,7 @@ module Gigya
 
 		### Gigya accessors
 		def uid
-			gigya_details["UID"]
+			gigya_details["UID"] rescue nil
 		end
 
 		def created_at
