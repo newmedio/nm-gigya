@@ -338,6 +338,10 @@ module Gigya
 
 			return response
 		end
+
+		def lookup_user(uid)
+			Gigya::User.find(uid, :connection => self)
+		end
 	
 		def method_missing(name, *args, &block)
 			if args.size == 0

@@ -156,6 +156,7 @@ So you will probably gain a second or two from your expiration date every time t
 
 The refresh process is automatic for cookie and session authentication.
 If you are authenticating with an `Authorization` header, you will be returned a `X-Set-Authorization-Token` header with the new JWT in it.
+Additionally, the `X-Set-Authorization-Token-Expiration` header will have the new expiration time of the token.
 If you fail to use the new JWT, it will slow your app down by doing re-auths every time.
 
 You can also customize the refresh process if you have additional internal logic you need to apply.
@@ -200,6 +201,64 @@ class MyController < ApplicationController::Base
 	end
 end
 ```
+
+## User Object
+
+We have added a Gigya::User object to simplify handling of users.
+We recommend that you subclass this object for your own usage.
+Basically, it is a simple wrapper around getAccountInfo and setAccountInfo which also incorporates some caching if you are using Rails.
+
+```
+u = Gigya::User.find("abc123")
+u.uid # abc123
+u.created_at
+u.first_name
+u.last_name
+u.full_name
+u.email
+u.birthday
+u.gender
+u.gender_string
+u.gigya_details # All the details from getAccountInfo as a hash
+u.save
+u2 = Gigya::User.find("abc123") # results are from cache
+u2.reload # Reloads using getAccountInfo
+```
+
+If you want to use a specific connection instead of the shared connection, do either:
+
+```
+u = conn.lookup_user("abc123")
+# or
+u = Gigya::User.find("abc123", :connection => conn)
+```
+
+We recommend you implement a custom class to take care of any customizations for this:
+
+```
+class MyUser < Gigya::User
+  def my_custom_detail
+    gigya_details["data"]["mystuff"] rescue nil
+  end
+
+  def my_custom_detail=(val)
+    gigya_details["data"] ||= {}
+    gigya_details["data"]["mystuff"] = val
+  end
+end
+
+u = MyUser.find("abc123")
+u.my_custom_detail = "blah"
+u.save
+```
+
+You can set caching options using
+
+```
+Gigya::User.cache_options = { :expires_in => 1.hour }
+```
+
+Note that changes to the user object aren't cached until `save` is called.
 
 ## Experimental Dynamic API
 
