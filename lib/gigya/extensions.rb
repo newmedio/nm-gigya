@@ -1,5 +1,5 @@
 class String
 	def to_gigya_user
-		Gigya::User.find(self)	
+		Gigya::User.from_string(self)	
 	end
 end
