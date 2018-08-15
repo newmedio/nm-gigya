@@ -3,6 +3,21 @@ module Gigya
 		attr_accessor :gigya_details
 		attr_accessor :gigya_connection
 
+		@@default_gigya_user_class = nil
+		def self.default_gigya_user_class
+			@@default_gigya_user_class
+		end
+
+		def self.default_gigya_user_class=(val)
+			@@default_gigya_user_class = val
+		end
+
+		def self.from_string(str)
+			uc = @@default_gigya_user_class || Gigya::User
+			uc = Kernel.const_get(uc) if String === uc
+			uc.find(str)
+		end
+
 		@@cache_options = {}
 		def self.cache_options
 			@@cache_options 

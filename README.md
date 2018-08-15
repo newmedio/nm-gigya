@@ -263,6 +263,48 @@ Gigya::User.cache_options = { :expires_in => 1.hour }
 
 Note that changes to the user object aren't cached until `save` is called.
 
+Additionally, we have added a method to convert strings into Gigya users.
+You can just call:
+
+```
+"abc123".to_gigya_user
+```
+
+To get a user by its identifier.  This will make life easier if you also follow the recommendations of the next section.
+
+## Storing Gigya Identifiers and Information
+
+We generally recommend *against* storing Gigya information in models.
+Additionally, we think that if you use Gigya you should *not* utilize a separate model for users, as that would just cause synchronization headaches.
+
+What we tend to do is simply store the UID as a string in the database, but treat it like a foreign key.  
+Therefore, let's say that we have a table listing all of a user's dogs.  
+We would structure the table (`dogs`) for the model (`Dog`) like this:
+
+```
+id | user_identifier | dog_name
+```
+
+Then, using the `to_gigya_user` string function that we provide, you can do the following to get the first name of the dog's owner.
+
+```
+d = Dog.find(1)
+name = d.user_identifier.to_gigya_user.first_name
+```
+
+Or, alternatively:
+
+```
+u = gigya_user_identifier
+my_dogs = Dog.where(:user_identifier => u)
+```
+
+If you want to_gigya_user to return your own subclass, rather than the default Gigya::User class, you can set it like this:
+
+```
+Gigya::User.default_gigya_user_class = My::UserClass # or the string "My::UserClass" 
+```
+
 ## Experimental Dynamic API
 
 There is also an experimental dynamic API.
