@@ -104,7 +104,7 @@ module Gigya
 				expiration = info["exp"] - info["iat"]
 			end
 			expiration_time = Time.now + expiration
-			result = Gigya::Connection.shared_connection.api_get("accounts", "getJWT", {:UID => gigya_user_identifier, :fields => fields.join(","), :expiration => expiration})
+			result = Gigya::Connection.shared_connection.api_get("accounts", "getJWT", {:targetUID => gigya_user_identifier, :fields => fields.join(","), :expiration => expiration})
 			token = result["id_token"]
 
 			raise "Unable to refresh token" if token.blank?
