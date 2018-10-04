@@ -161,7 +161,8 @@ module Gigya
 					:datacenter => ENV["GIGYA_DATACENTER"] || "us1",
 					:api_key => ENV["GIGYA_API_KEY"],
 					:user_key => ENV["GIGYA_USER_KEY"],
-					:user_secret => ENV["GIGYA_USER_SECRET"]
+					:user_secret => ENV["GIGYA_USER_SECRET"],
+					:debug_connection => ENV["GIGYA_DEBUG_CONNECTION"] == "1"
 				)
 				conn.jwt_skip_validation = false
 				conn
@@ -222,7 +223,7 @@ module Gigya
 		def build_test_jwt(uid = nil, data_options = {}, expiration = nil, gigya_munge = false)
 			data_options = (data_options || {}).dup
 			data_options["sub"] = uid unless uid.nil?
-			data_options["sub"] ||=SecureRandom.uuid
+			data_options["sub"] ||= SecureRandom.uuid
 			data_options["apiKey"] ||= (@opts[:api_key] || "no_api_key")
 			data_options["iss"] ||= "https://fidm.gigya.com/jwt/#{data_options["apiKey"]}/"
 			data_options["iat"] ||= (Time.now - 10.seconds).to_i

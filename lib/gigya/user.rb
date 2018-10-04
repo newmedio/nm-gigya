@@ -3,6 +3,15 @@ module Gigya
 		attr_accessor :gigya_details
 		attr_accessor :gigya_connection
 
+		@@extra_profile_fields = []
+		def self.extra_profile_fields=(val)
+			@@extra_profile_fields = val
+		end
+	
+		def self.extra_profile_fields
+			@@extra_profile_fields
+		end
+
 		@@default_gigya_user_class = nil
 		def self.default_gigya_user_class
 			@@default_gigya_user_class
@@ -42,7 +51,7 @@ module Gigya
 
 		def reload
 			conn = gigya_connection || Gigya::Connection.shared_connection
-			set_attributes(conn.api_get("accounts", "getAccountInfo", {UID: uid}))
+			set_attributes(conn.api_get("accounts", "getAccountInfo", {UID: uid, include:"profile,data,subscriptions,userInfo,preferences", extraProfileFields:@@extra_profile_fields.join(",")}))
 		end
 
 		def save
