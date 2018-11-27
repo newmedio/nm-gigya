@@ -3,7 +3,7 @@ module Gigya
 		attr_accessor :gigya_details
 		attr_accessor :gigya_connection
 
-		@@extra_profile_fields = []
+		@@extra_profile_fields = ["locale"]
 		def self.extra_profile_fields=(val)
 			@@extra_profile_fields = val
 		end
@@ -103,7 +103,7 @@ module Gigya
 				return self.new(cache_info, false)
 			else
 				connection = opts[:connection] || Gigya::Connection.shared_connection
-				response = connection.api_get("accounts", "getAccountInfo", {UID: uid})
+				response = connection.api_get("accounts", "getAccountInfo", {UID: uid, include:"profile,data,subscriptions,userInfo,preferences", extraProfileFields:@@extra_profile_fields.join(",")})
 				obj = self.new(response)
 				obj.gigya_connection = connection
 				return obj
