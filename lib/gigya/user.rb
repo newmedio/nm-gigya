@@ -144,6 +144,10 @@ module Gigya
 			gigya_details["profile"]["gender"] rescue nil
 		end
 
+		def locale
+			gigya_details["profile"]["locale"] rescue nil
+		end
+
 		def gender_string
 			begin
 				case gigya_details["profile"]["gender"]
