@@ -221,9 +221,9 @@ module Gigya
 		end
 
 		def build_test_jwt(uid = nil, data_options = {}, expiration = nil, gigya_munge = false)
+			uid = SecureRandom.uuid if uid.nil?
 			data_options = (data_options || {}).dup
-			data_options["sub"] = uid unless uid.nil?
-			data_options["sub"] ||= SecureRandom.uuid
+			data_options["sub"] = uid 
 			data_options["apiKey"] ||= (@opts[:api_key] || "no_api_key")
 			data_options["iss"] ||= "https://fidm.gigya.com/jwt/#{data_options["apiKey"]}/"
 			data_options["iat"] ||= (Time.now - 10.seconds).to_i
@@ -231,7 +231,7 @@ module Gigya
 			data_options["exp"] ||= (Time.now + (60 * 60)).to_i
 			data_options["firstName"] ||= "Jim#{rand(10000000)}"
 			data_options["lastName"] ||= "Jimmersly#{rand(10000000)}"
-			data_options["email"] ||= "jim+#{rand(10000000)}@example.com"
+			data_options["email"] ||= "example+#{uid}@example.com"
 			
 			jwt_str = JWT.encode(data_options, nil, 'none', {:typ => "JWT"})
 			jwt_str = self.class.strange_unmunge(jwt_str) if gigya_munge
