@@ -3,7 +3,7 @@ module Gigya
 		attr_accessor :gigya_details
 		attr_accessor :gigya_connection
 
-		@@extra_profile_fields = ["locale"]
+		@@extra_profile_fields = ["locale", "phones"]
 		def self.extra_profile_fields=(val)
 			@@extra_profile_fields = val
 		end
@@ -134,14 +134,6 @@ module Gigya
 		def email
 			gigya_details["profile"]["email"].to_s.downcase rescue nil
 		end
-
-    def height
-      gigya_details["data"]["strHeight"].to_s.downcase rescue nil
-    end
-
-    def weight
-      gigya_details["data"]["strWeight"].to_s.downcase rescue nil
-    end
 
 		def birthday
 			profile = gigya_details["profile"]
