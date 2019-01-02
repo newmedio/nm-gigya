@@ -135,6 +135,14 @@ module Gigya
 			gigya_details["profile"]["email"].to_s.downcase rescue nil
 		end
 
+    def height
+      gigya_details["data"]["strHeight"].to_s.downcase rescue nil
+    end
+
+    def weight
+      gigya_details["data"]["strWeight"].to_s.downcase rescue nil
+    end
+
 		def birthday
 			profile = gigya_details["profile"]
 			Date.new(profile["birthYear"], profile["birthMonth"], profile["birthDay"]) rescue nil
