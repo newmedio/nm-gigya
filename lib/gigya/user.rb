@@ -99,7 +99,7 @@ module Gigya
 			opts = {} if opts.nil?
 
 			cache_info = load_from_cache(uid)
-			if cache_info.present?
+			if cache_info.present? || opts["cache"] != false
 				return self.new(cache_info, false)
 			else
 				connection = opts[:connection] || Gigya::Connection.shared_connection
