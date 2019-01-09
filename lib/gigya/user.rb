@@ -95,11 +95,11 @@ module Gigya
 			return self.find(uid, opts)
 		end
 
-		def self.find(uid, opts = {}) # Find a Gigya account record by its UID attribute
+		def self.find(uid, opts = {}, needs_caching = true) # Find a Gigya account record by its UID attribute
 			opts = {} if opts.nil?
 
 			cache_info = load_from_cache(uid)
-			if cache_info.present? || opts["cache"] != false
+			if cache_info.present? || needs_caching
 				return self.new(cache_info, false)
 			else
 				connection = opts[:connection] || Gigya::Connection.shared_connection
