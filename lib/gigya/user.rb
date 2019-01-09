@@ -136,7 +136,7 @@ module Gigya
 		end
 
 		def birthday
-			profile = gigya_details["profile"]
+			profile = gigya_details["profile"] rescue nil
 			Date.new(profile["birthYear"], profile["birthMonth"], profile["birthDay"]) rescue nil
 		end
 
