@@ -103,8 +103,8 @@ module Gigya
 
 			cache_info = load_from_cache(uid)
 			if cache_info.present? && opts[:cache]
-				return self.new(cache_info, false)
         Rails.logger.warn("!!!!!!!!!!!!!!!!!!! CACHE HIT")
+				return self.new(cache_info, false)
 			else
 				connection = opts[:connection] || Gigya::Connection.shared_connection
 				response = connection.api_get("accounts", "getAccountInfo", {UID: uid, include:"profile,data,subscriptions,userInfo,preferences", extraProfileFields:@@extra_profile_fields.join(",")})
