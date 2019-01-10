@@ -95,17 +95,23 @@ module Gigya
 			return self.find(uid, opts)
 		end
 
-		def self.find(uid, opts = {}, needs_caching = true) # Find a Gigya account record by its UID attribute
+		def self.find(uid, opts = {}) # Find a Gigya account record by its UID attribute
 			opts = {} if opts.nil?
+      opts[:cache] = true if opts[:cache].nil?
+      Rails.logger.warn("********~~~~~~~~~~~~~~ OPTS")
+      Rails.logger.warn(opts.to_s)
 
 			cache_info = load_from_cache(uid)
-			if cache_info.present? || needs_caching
+			if cache_info.present? && opts[:cache]
 				return self.new(cache_info, false)
+        Rails.logger.warn("!!!!!!!!!!!!!!!!!!! CACHE HIT")
 			else
 				connection = opts[:connection] || Gigya::Connection.shared_connection
 				response = connection.api_get("accounts", "getAccountInfo", {UID: uid, include:"profile,data,subscriptions,userInfo,preferences", extraProfileFields:@@extra_profile_fields.join(",")})
 				obj = self.new(response)
 				obj.gigya_connection = connection
+        Rails.logger.warn("!!!!!!!!!!!!!!!!!!! NON HIT")
+        Rails.logger.warn(obj.inspect)
 				return obj
 			end
 		end
