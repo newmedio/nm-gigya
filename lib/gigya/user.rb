@@ -89,7 +89,7 @@ module Gigya
 			email = email.gsub('"', '') # get rid of quotes
 			opts = {} if opts.nil?
 			conn = opts[:connection] || Gigya::Connection.shared_connection
-			resp = conn.api_get("accounts", "search", {:query => "SELECT uid FROM accounts WHERE profile.email = \"#{email}\""})
+			resp = conn.api_get("accounts", "search", {:query => "SELECT UID FROM accounts WHERE profile.email = \"#{email}\""})
 			uid = resp["results"][0]["UID"] rescue nil
 			return nil if uid.blank?
 			return self.find(uid, opts)

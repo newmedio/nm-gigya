@@ -1,8 +1,8 @@
 Gem::Specification.new do |s|
   s.platform = Gem::Platform::RUBY
   s.name        = 'nm-gigya'
-  s.version     = '0.1.18'
-  s.date        = '2018-10-04'
+  s.version     = '0.1.19'
+  s.date        = '2019-02-07'
   s.summary       = "Gigya API Utility Package"
   s.authors     = ["Jonathan Bartlett", "Tyler Jackson"]
   s.email       = 'jonathan@newmedio.com'
