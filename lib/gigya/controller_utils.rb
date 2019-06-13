@@ -48,11 +48,13 @@ module Gigya
 				end
 
 				begin
-					tmp_token = params[GIGYA_QUERY_PARAM] unless params[GIGYA_QUERY_PARAM].blank?
-					token_location = :param
 					if tmp_token.blank?
-						tmp_token = cookies[GIGYA_COOKIE_PARAM]
-						token_location = :cookie
+						tmp_token = params[GIGYA_QUERY_PARAM] unless params[GIGYA_QUERY_PARAM].blank?
+						token_location = :param
+						if tmp_token.blank?
+							tmp_token = cookies[GIGYA_COOKIE_PARAM]
+							token_location = :cookie
+						end
 					end
 				rescue
 					# Some lightweight controllers don't do cookies
