@@ -62,7 +62,7 @@ module Gigya
 
 				begin
 					if tmp_token.blank?
-						tmp_token = session[GIGYA_SESSION_PARAM]	
+						tmp_token = session[GIGYA_SESSION_PARAM]
 						token_location = :session
 					end
 				rescue
@@ -78,7 +78,7 @@ module Gigya
 		end
 
 		def interpret_jwt_token(force = false)
-			if @gigya_jwt_info.nil? 
+			if @gigya_jwt_info.nil?
 				@gigya_jwt_info = Gigya::Connection.shared_connection.validate_jwt(gigya_jwt_token)
 
 				perform_token_refresh if needs_token_refresh?
@@ -114,7 +114,7 @@ module Gigya
 			case @gigya_token_location
 				when :header
 					headers["X-Set-Authorization-Token"] = token
-					headers["X-Set-Authorization-Token-Expiration"] = expiration_time.to_i
+					headers["X-Set-Authorization-Token-Expiration"] = expiration_time.to_i.to_s
 				when :cookie
 					cookies[GIGYA_COOKIE_PARAM] = token
 				when :session
@@ -160,5 +160,5 @@ module Gigya
 				@gigya_jwt_info["sub"]
 			end
 		end
-	end	
+	end
 end
