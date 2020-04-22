@@ -50,7 +50,7 @@ module Gigya
 		end
 
 		def reload
-			conn = gigya_connection || Gigya::Connection.shared_connection
+			conn = my_gigya_connection
 			set_attributes(conn.api_get("accounts", "getAccountInfo", {UID: uid, include:"profile,data,subscriptions,userInfo,preferences", extraProfileFields:@@extra_profile_fields.join(",")}))
 		end
 
@@ -60,7 +60,7 @@ module Gigya
 			info["data"] = gigya_details["data"].to_json if gigya_details["data"].present?
 			# What about isActive, isVerified?, password/newPassword, preferences, add/removeLoginEmails, subscriptions, lang, rba
 
-			conn = gigya_connection || Gigya::Connection.shared_connection	
+			conn = my_gigya_connection
 			conn.api_post("accounts", "setAccountInfo", info)
 			save_to_cache
 
@@ -97,7 +97,7 @@ module Gigya
 
 		def self.find(uid, opts = {}) # Find a Gigya account record by its UID attribute
 			opts = {} if opts.nil?
-      opts[:cache] = true if opts[:cache].nil?
+			opts[:cache] = true if opts[:cache].nil?
 
 			cache_info = load_from_cache(uid)
 			if cache_info.present? && opts[:cache]
@@ -162,6 +162,12 @@ module Gigya
 			rescue
 				nil
 			end
+		end
+
+		private
+
+		def my_gigya_connection
+			gigya_connection || Gigya::Connection.shared_connection
 		end
 	end
 end

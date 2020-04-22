@@ -302,7 +302,7 @@ module Gigya
 			params[:apiKey] = opts[:api_key]
 			unless opts[:authenticate_app] == false
 				params[:secret] = opts[:user_secret]
-				params[:userKey] = opts[:user_key]
+				params[:userKey] = opts[:user_key] unless opts[:user_key].blank?
 			end
 
 			if opts[:session] != nil
