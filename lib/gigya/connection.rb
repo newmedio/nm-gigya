@@ -292,6 +292,15 @@ module Gigya
 			api_call("POST", area, function, params, opts)
 		end
 
+		# This allows substituting how HTTP calls are made (could be useful for testing)
+		def http_driver
+			@http_driver || HTTParty
+		end
+
+		def http_driver=(val)
+			@http_driver = val
+		end
+
 		def api_call(http_method, area, function, params = nil, opts = nil)
 			params ||= {}
 			opts ||= {}
@@ -319,7 +328,7 @@ module Gigya
 			end
 			http_response = nil
 			response = begin
-				http_response = http_method == "GET" ? HTTParty.get(base_url, :query => params) : HTTParty.post(base_url, :body => params)
+				http_response = http_method == "GET" ? http_driver.get(base_url, :query => params) : http_driver.post(base_url, :body => params)
 				JSON.parse(http_response.body)
 			rescue
 				{"errorCode" => 600, "errorMessage" => "Unknown error", "errorDetail" => "Unable to communicate with authentication server", :http => http_response.inspect}

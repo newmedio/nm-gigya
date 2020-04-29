@@ -164,6 +164,130 @@ module Gigya
 			end
 		end
 
+
+		# Intended way of calling this:
+		# Gigya::User.create_gigya_user_through_notify_login("abc@example.com", :password => "Abc123!!", :account => { "preferences" => {"foo" => "bar" } }, :verified => true)
+		#
+		# Options:
+		#   :password => Set a password,
+		#   :source => the registration source
+		#   :account => hash of any account defaults you want to set.  Profile defaults should be under the "profile" key.
+		#   :send_verification => Will send verification email
+		#   :verified => Will auto-set "verified"
+		#   :force => Will do things that Gigya doesn't naturally want to do (often used in combination with :verified)
+		#   :debug => will print out call information	
+
+		# Creates a gigya user through the `notify_login` pathway
+		def self.create_gigya_user_through_notify_login(email, opts = {})
+			conn = opts[:gigya_connection] || Gigya::Connection.shared_connection
+
+			# Create UUID
+			new_uid = opts[:UID] || "#{SecureRandom.uuid.gsub("-", "")}#{SecureRandom.uuid.gsub("-", "")}"
+
+			# Is the address available?
+			email_is_available = conn.api_get("accounts", "isAvailableLoginID", { "loginID" => email }, :debug_connection => opts[:debug])["isAvailable"] rescue false
+			raise "Username is unavailable" unless email_is_available
+
+			# Register UUID
+			response = conn.api_get("accounts", "notifyLogin", {"siteUID" => new_uid}, :debug_connection => opts[:debug])
+			raise "Could not register UID" unless response["errorCode"] == 0 || response["errorCode"] == 206001
+
+			# Start the registration process
+			regtoken = conn.api_get("accounts", "initRegistration", {}, :debug_connection => opts[:debug])["regToken"] rescue nil
+			raise "Could not initiate registration" if regtoken.blank?
+
+			# Create the data record
+			account_info = opts[:account] || {}        # This allows the caller to send us defaults
+			account_info["UID"] = new_uid              # Primary key
+			account_info["regToken"] = regtoken        # Ties it to the initial registration
+			account_info["securityOverride"] = true    # Allows us to set passwords if we want
+			account_info["profile"] ||= {}
+			account_info["profile"]["email"] = email   # Actual login username
+			account_info["profile"] = account_info["profile"].to_json
+			account_info["preferences"] = account_info["preferences"].to_json
+			account_info["regSource"] = opts[:source] || "nm-gigya"
+
+			# Optional data record pieces
+			account_info["isVerified"] = true if opts[:verified]
+			account_info["newPassword"] = opts[:password] unless opts[:password].blank?
+
+			# Create the registration with the data record
+			results = conn.api_post("accounts", "setAccountInfo", account_info, :debug_connection => opts[:debug])
+
+			# If not everything got set correctly (NOTE - doesn't work if :password is not also sent)
+			if opts[:force]
+				response = conn.api_get("accounts", "login", {"loginID" => email, "password" => opts[:password]}, :debug_connection => opts[:debug])
+				if response["errorCode"] != 0
+					verify_reg_token = response["regToken"]
+					response = conn.api_get("accounts", "finalizeRegistration", {"regToken" => verify_reg_token, "include" => "emails, profile"}, :debug_connection => opts[:debug])
+					unless response["errorCode"] == 0 || response["errorCode"] == 206002 || response["errorCode"] == 206001
+						raise "Unable to finalize registration" 
+					end
+				end
+			end
+
+			if opts[:send_verification]
+				conn.api_get("accounts", "resendVerificationCode", {"UID" => new_uid, "email" => email})
+			end
+
+			if opts[:send_password_change]
+				conn.api_get("accounts", "resetPassword", {"UID" => new_uid, "loginID" => email, "email" => email})
+			end
+
+			return new_uid
+		end
+
+		# Creates a gigya user through the `register` pathway
+
+		# Options:
+		#   :password => Set a password,
+		#   :source => the registration source
+		#   :account => hash of any account defaults you want to set.  Profile defaults should be under the "profile" key.
+		#   :debug => will print out call information
+
+		def self.create_gigya_user_through_register(email, opts = {})
+			conn = opts[:gigya_connection] || Gigya::Connection.shared_connection
+
+			new_password = opts[:password] || SecureRandom.urlsafe_base64(8)
+
+			# Create UUID
+			new_uid = opts[:UID] || "#{SecureRandom.uuid.gsub("-", "")}#{SecureRandom.uuid.gsub("-", "")}"
+
+			# Is the address available?
+			email_is_available = conn.api_get("accounts", "isAvailableLoginID", { "loginID" => email }, :debug_connection => opts[:debug])["isAvailable"] rescue false
+			raise "Username is unavailable" unless email_is_available
+
+			# Start the registration process
+			regtoken = conn.api_get("accounts", "initRegistration", {}, :debug_connection => opts[:debug])["regToken"] rescue nil
+			raise "Could not initiate registration" if regtoken.blank?
+
+			# Create the data record
+			account_info = opts[:account] || {}        # This allows the caller to send us defaults
+			account_info["siteUID"] = new_uid              # Primary key
+			account_info["regToken"] = regtoken        # Ties it to the initial registration
+			account_info["profile"] ||= {}
+			account_info["email"] = email
+			account_info["profile"]["email"] = email   # Actual login username
+			account_info["profile"] = account_info["profile"].to_json
+			account_info["preferences"] = account_info["preferences"].to_json unless account_info["preferences"].nil?
+			account_info["regSource"] = opts[:source] unless opts[:source].blank?
+			account_info["password"] = new_password
+			account_info["data"] = account_info["data"].to_json unless account_info["data"].nil?
+
+			# Complete the registration process
+			conn.api_post("accounts", "register", account_info, :debug_connection => opts[:debug])
+
+			if opts[:send_verification]
+				conn.api_get("accounts", "resendVerificationCode", {"UID" => new_uid, "email" => email})
+			end
+
+			if opts[:send_password_change]
+				conn.api_get("accounts", "resetPassword", {"UID" => new_uid, "loginID" => email, "email" => email})
+			end
+
+			return new_uid
+		end
+
 		private
 
 		def my_gigya_connection

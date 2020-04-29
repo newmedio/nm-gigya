@@ -272,6 +272,16 @@ You can just call:
 
 To get a user by its identifier.  This will make life easier if you also follow the recommendations of the next section.
 
+### Creating a Gigya User
+
+All methods of creating Gigya users are terrible.  Hopefully one of them
+will be fixed eventually.  In the meantime, we've provided two, and 
+hopefully one of them will work for you.  As of right now, neither will
+get you a fully verified login.  Sorry!
+
+ * `Gigya::User.create_gigya_user_through_notify_login(email, opts)` - this creates a user by first calling notifyLogin, initRegistration, and then tying them together through setAccountInfo.
+ * `Gigya::User.create_gigya_user_through_register(email, opts)` - this creates a user by calling initRegistration and register
+
 ## Storing Gigya Identifiers and Information
 
 We generally recommend *against* storing Gigya information in models.
