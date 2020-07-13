@@ -28,7 +28,7 @@ module Gigya
 
 		def log_token_error(tok, msg = nil)
 			if @@max_logged_tokens > 0
-				if @logged_tokens[tok]
+				if @@logged_tokens[tok]
 					# already logged
 				else
 					@@logged_tokens[tok] = true
