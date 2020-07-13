@@ -23,15 +23,30 @@ module Gigya
 			@@gigya_refresh_time_decay
 		end
 
+		@@max_logged_tokens = 20
+		@@logged_tokens = {}
+
+		def log_token_error(tok, msg = nil)
+			if @@max_logged_tokens > 0
+				if @logged_tokens[tok]
+					# already logged
+				else
+					@@logged_tokens[tok] = true
+					@@max_logged_tokens = @@max_logged_tokens - 1
+				end
+				Rails.logger.warn("Token Issue: #{tok}") if tok.present?
+				Rails.logger.warn("Token message: #{msg}") if msg.present?
+			end
+		end
+
 		def gigya_user_required
 			begin
 				if gigya_user_identifier.blank?
-					Rails.logger.warn("Not decoded token: #{request.headers["Authorization"]}")
+					log_token_error(request.headers["Authorization"])
 					render(:json => {:error => "Invalid login"}, :status => 401) 
 				end
 			rescue
-				Rails.logger.warn("Error checking gigya token: #{$!.message}")
-				Rails.logger.warn("Actual token: #{request.headers["Authorization"]}")
+				log_token_error(request.headers["Authorization"], $!.message)
 				render(:json => {:error => "#{$!.message}"}, :status => 401)
 			end
 		end
