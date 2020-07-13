@@ -25,8 +25,13 @@ module Gigya
 
 		def gigya_user_required
 			begin
-				render(:json => {:error => "Invalid login"}, :status => 401) if gigya_user_identifier.blank?
+				if gigya_user_identifier.blank?
+					Rails.logger.warn("Not decoded token: #{request.headers["Authorization"]}")
+					render(:json => {:error => "Invalid login"}, :status => 401) 
+				end
 			rescue
+				Rails.logger.warn("Error checking gigya token: #{$!.message}")
+				Rails.logger.warn("Actual token: #{request.headers["Authorization"]}")
 				render(:json => {:error => "#{$!.message}"}, :status => 401)
 			end
 		end
