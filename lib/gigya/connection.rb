@@ -153,6 +153,7 @@ module Gigya
 
 	class Connection
 		attr_accessor :jwt_skip_validation
+		attr_accessor :whitelisted_api_keys
 
 		GIGYA_BASE_URL="gigya.com"
 		def self.shared_connection
@@ -164,6 +165,10 @@ module Gigya
 					:user_secret => ENV["GIGYA_USER_SECRET"],
 					:debug_connection => ENV["GIGYA_DEBUG_CONNECTION"] == "1"
 				)
+
+				whitelist = ENV["GIGYA_WHITELISTED_API_KEYS"]
+				conn.whitelisted_api_keys => whitelist.split(",") unless whitelist.blank?
+
 				conn.jwt_skip_validation = false
 				conn
 			end
@@ -262,6 +267,18 @@ module Gigya
 			user_jwt_info, signing_jwt_info = JWT.decode(jwt_token, nil, false)
 
 			return user_jwt_info if jwt_skip_validation
+
+			# If we have enumerated whitelisted API keys
+			unless whitelisted_api_keys.nil?
+				# Grab the API key encoded in the token
+				jwt_api_key = user_jwt_info["apiKey"]
+
+				# Our own API key is automatically valid
+				if jwt_api_key != api_key
+					# Make sure it is listed in the whitelisted keys
+					raise "Invalid API Key" unless whitelisted_api_keys.include?(jwt_api_key)
+				end
+			end
 
 			signing_key_id = signing_jwt_info["keyid"]
 			@cached_data["jwt_public_keys"] ||= {}
