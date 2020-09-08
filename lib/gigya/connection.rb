@@ -167,7 +167,7 @@ module Gigya
 				)
 
 				whitelist = ENV["GIGYA_WHITELISTED_API_KEYS"]
-				conn.whitelisted_api_keys => whitelist.split(",") unless whitelist.blank?
+				conn.whitelisted_api_keys = whitelist.split(",") unless whitelist.blank?
 
 				conn.jwt_skip_validation = false
 				conn
