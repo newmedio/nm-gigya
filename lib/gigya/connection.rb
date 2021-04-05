@@ -280,7 +280,7 @@ module Gigya
 				end
 			end
 
-			signing_key_id = signing_jwt_info["keyid"]
+			signing_key_id = signing_jwt_info["keyid"] || signing_jwt_info["kid"]
 			@cached_data["jwt_public_keys"] ||= {}
 			k = @cached_data["jwt_public_keys"][signing_key_id]
 			k = download_latest_jwt_public_key(signing_key_id) if k == nil
